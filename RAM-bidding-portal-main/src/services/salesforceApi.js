@@ -122,27 +122,22 @@ export async function getOffers() {
     return mockOffers
   }
 
-  try {
-    const { data } = await api.get('/api/offers')
-    if (!Array.isArray(data)) return []
+  const { data } = await api.get('/api/offers')
+  if (!Array.isArray(data)) return []
 
-    if (data.length === 0 || data[0].reference) {
-      return data
-        .map(normalizeOfferUi)
-        .filter((offer) => {
-          if (offer.status === 'active') return true
-          if (isPublishedStatus(offer.status)) return true
-          return false
-        })
-    }
-
+  if (data.length === 0 || data[0].reference) {
     return data
-      .filter((record) => isPublishedStatus(record.Status__c))
-      .map(mapOfferRecordToUi)
-  } catch {
-    await fakeDelay()
-    return mockOffers
+      .map(normalizeOfferUi)
+      .filter((offer) => {
+        if (offer.status === 'active') return true
+        if (isPublishedStatus(offer.status)) return true
+        return false
+      })
   }
+
+  return data
+    .filter((record) => isPublishedStatus(record.Status__c))
+    .map(mapOfferRecordToUi)
 }
 
 export async function getOffersFromSObjectApi() {
@@ -283,4 +278,3 @@ export async function createSoumission(appelDOffresId, prixPropose, conditionsAs
     throw error
   }
 }
-

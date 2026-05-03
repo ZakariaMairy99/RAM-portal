@@ -11,17 +11,17 @@ export default function ConsultationsList({ consultations, active, onSelect }) {
       <div className="flex items-center justify-between mb-5">
         <div>
           <h2 className="font-display font-semibold text-lg text-ram-secondary">
-            Appels d'offres publies RAM
+            Consultations publiées RAM
           </h2>
           <p className="text-xs text-ink-muted mt-1">
-            Liste des AO disponibles pour consultation hôtel
+            Liste des consultations disponibles pour l'hôtel
           </p>
         </div>
       </div>
 
       {consultations.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center text-sm text-ink-muted">
-          Aucun AO publie visible pour le moment.
+          Aucune consultation publiée visible pour le moment.
         </div>
       ) : null}
 

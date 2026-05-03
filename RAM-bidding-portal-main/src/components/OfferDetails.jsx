@@ -16,7 +16,7 @@ export default function OfferDetails({ offer }) {
           <div className="flex items-center gap-2 mb-1.5">
             <div className="w-7 h-px bg-ram-gold" />
             <span className="text-ram-gold text-[10px] uppercase tracking-[0.24em] font-medium">
-              Detail AO
+              Détail consultation
             </span>
           </div>
           <h3 className="font-display font-semibold text-lg">{offer.reference}</h3>

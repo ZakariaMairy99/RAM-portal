@@ -10,7 +10,7 @@ export default function OffersConsolidatedTable({ offers = [], activeOfferId, on
     >
       <div className="px-6 py-5 border-b border-gray-100">
         <h3 className="font-display font-semibold text-base text-ram-secondary">
-          Tableau consolide des AO publies
+          Tableau consolidé des consultations publiées
         </h3>
         <p className="text-xs text-ink-muted mt-1">
           Vue synthese des offres disponibles et de leurs contraintes.

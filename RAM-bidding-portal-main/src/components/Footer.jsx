@@ -14,9 +14,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="md:col-span-1">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 bg-ram-primary rounded-lg flex items-center justify-center font-display font-bold text-lg">
-                RAM
-              </div>
+              <img src="/logo-ram.png" alt="Royal Air Maroc" className="h-12 w-auto object-contain" />
               <div>
                 <div className="font-display font-semibold">Royal Air Maroc</div>
                 <div className="text-[10px] uppercase tracking-widest text-ram-gold">

@@ -24,34 +24,28 @@ export default function Navbar({ variant = 'transparent' }) {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6 }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        isSolid
-          ? 'bg-white/95 backdrop-blur-md shadow-premium'
-          : 'bg-transparent'
+        isSolid ? 'bg-white/95 backdrop-blur-md shadow-premium' : 'bg-transparent'
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <div className="flex items-center justify-between h-20">
-          {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
             <div className="relative">
-              <div className="w-11 h-11 bg-ram-primary rounded-lg flex items-center justify-center font-display font-bold text-white text-lg shadow-ram">
-                RAM
-              </div>
+              <img src="/logo-ram.png" alt="Royal Air Maroc" className="h-11 w-auto object-contain" />
               <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-ram-gold rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
             <div className={`transition-colors ${isSolid ? 'text-ram-secondary' : 'text-white'}`}>
-              <div className="font-display font-semibold text-base leading-tight">
-                Royal Air Maroc
-              </div>
-              <div className={`text-[10px] uppercase tracking-widest font-medium ${
-                isSolid ? 'text-ram-gold' : 'text-ram-gold-light'
-              }`}>
+              <div className="font-display font-semibold text-base leading-tight">Royal Air Maroc</div>
+              <div
+                className={`text-[10px] uppercase tracking-widest font-medium ${
+                  isSolid ? 'text-ram-gold' : 'text-ram-gold-light'
+                }`}
+              >
                 Partenaires Hôteliers
               </div>
             </div>
           </Link>
 
-          {/* Desktop nav */}
           <div className="hidden lg:flex items-center gap-10">
             {isLanding ? (
               <>
@@ -61,21 +55,31 @@ export default function Navbar({ variant = 'transparent' }) {
                 <NavLink isSolid={isSolid} href="#contact">Contact</NavLink>
               </>
             ) : (
-              <Link to="/" className={`font-medium text-sm transition-colors ${
-                isSolid ? 'text-ink hover:text-ram-primary' : 'text-white hover:text-ram-gold'
-              }`}>
+              <Link
+                to="/"
+                className={`font-medium text-sm transition-colors ${
+                  isSolid ? 'text-ink hover:text-ram-primary' : 'text-white hover:text-ram-gold'
+                }`}
+              >
                 ← Retour à l'accueil
               </Link>
             )}
           </div>
 
-          {/* CTA */}
-          <div className="hidden lg:flex items-center gap-3">            <Link to="/portal" className="btn-premium-primary text-sm">
+          <div className="hidden lg:flex items-center gap-3">
+            <Link
+              to="/login"
+              className={`font-medium text-sm transition-colors ${
+                isSolid ? 'text-ram-secondary hover:text-ram-primary' : 'text-white hover:text-ram-gold'
+              }`}
+            >
+              Connexion
+            </Link>
+            <Link to="/portal" className="btn-premium-primary text-sm">
               Accéder au portail
             </Link>
           </div>
 
-          {/* Mobile menu button */}
           <button
             className="lg:hidden p-2"
             onClick={() => setMobileOpen(!mobileOpen)}
@@ -89,7 +93,6 @@ export default function Navbar({ variant = 'transparent' }) {
           </button>
         </div>
 
-        {/* Mobile menu */}
         {mobileOpen && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
@@ -101,6 +104,7 @@ export default function Navbar({ variant = 'transparent' }) {
             <a href="#how" className="block text-ink font-medium">Comment ça marche</a>
             <a href="#contact" className="block text-ink font-medium">Contact</a>
             <div className="pt-4 border-t border-gray-100 flex flex-col gap-3">
+              <Link to="/login" className="text-ram-secondary font-medium">Connexion</Link>
               <Link to="/portal" className="btn-premium-primary text-sm justify-center">
                 Accéder au portail
               </Link>
@@ -125,8 +129,4 @@ function NavLink({ href, children, isSolid }) {
     </a>
   )
 }
-
-
-
-
 
