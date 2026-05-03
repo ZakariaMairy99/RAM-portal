@@ -70,16 +70,7 @@ export default function Navbar({ variant = 'transparent' }) {
           </div>
 
           {/* CTA */}
-          <div className="hidden lg:flex items-center gap-3">
-            <Link
-              to="/login"
-              className={`font-medium text-sm transition-colors ${
-                isSolid ? 'text-ram-secondary hover:text-ram-primary' : 'text-white hover:text-ram-gold'
-              }`}
-            >
-              Connexion
-            </Link>
-            <Link to="/portal" className="btn-premium-primary text-sm">
+          <div className="hidden lg:flex items-center gap-3">            <Link to="/portal" className="btn-premium-primary text-sm">
               Accéder au portail
             </Link>
           </div>
@@ -110,7 +101,6 @@ export default function Navbar({ variant = 'transparent' }) {
             <a href="#how" className="block text-ink font-medium">Comment ça marche</a>
             <a href="#contact" className="block text-ink font-medium">Contact</a>
             <div className="pt-4 border-t border-gray-100 flex flex-col gap-3">
-              <Link to="/login" className="text-ram-secondary font-medium">Connexion</Link>
               <Link to="/portal" className="btn-premium-primary text-sm justify-center">
                 Accéder au portail
               </Link>
@@ -135,6 +125,8 @@ function NavLink({ href, children, isSolid }) {
     </a>
   )
 }
+
+
 
 
 

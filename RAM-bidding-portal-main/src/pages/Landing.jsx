@@ -264,7 +264,7 @@ export default function Landing() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 reveal">
-            <StepCard step="1" title="Connexion" text="Identifiez-vous via le portail sécurisé avec vos accès partenaire." />
+            <StepCard step="1" title="Accès portail" text="Accédez directement au portail partenaire sans étape de connexion." />
             <StepCard step="2" title="Consultations" text="Consultez les demandes de prix actives sur vos escales d'intérêt." />
             <StepCard step="3" title="Soumission" text="Proposez votre tarif. Validation automatique et horodatage en temps réel." />
             <StepCard step="4" title="Suivi" text="Visualisez votre rang et l'évolution du marché en continu." />
@@ -298,9 +298,6 @@ export default function Landing() {
             <Link to="/portal" className="btn-premium-gold text-base">
               Accéder au portail
               <ArrowRight size={18} />
-            </Link>
-            <Link to="/login" className="btn-premium border border-white/40 text-white hover:bg-white/10">
-              Se connecter
             </Link>
           </div>
         </div>

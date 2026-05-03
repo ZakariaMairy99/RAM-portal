@@ -1,4 +1,4 @@
-﻿import axios from 'axios'
+import axios from 'axios'
 import {
   consultations,
   ranking,
@@ -8,61 +8,20 @@ import {
   currentHotel,
   mockOffers,
 } from '../data/mockData'
-import { clearSalesforceSession, getSalesforceAccessToken, getSalesforceSession } from './salesforceAuth'
-
-/**
- * Service API - Couche d'abstraction vers Salesforce
- *
- * Mode auto:
- * - Si session OAuth presente (token + instance URL) => appels Salesforce reels
- * - Sinon => fallback mock pour garder le portail demo operationnel
- */
 
 const FORCE_MOCK = String(import.meta.env.VITE_SF_USE_MOCK || '').toLowerCase() === 'true'
-const ENV_INSTANCE_URL = import.meta.env.VITE_SF_INSTANCE_URL || ''
-
-function getApiBaseUrl() {
-  const sessionInstanceUrl = getSalesforceSession()?.instanceUrl || ''
-  return sessionInstanceUrl || ENV_INSTANCE_URL
-}
-
-function canCallSalesforce() {
-  return Boolean(getSalesforceAccessToken() && getApiBaseUrl())
-}
+const API_BASE = import.meta.env.VITE_BACKEND_BASE_URL || ''
 
 function useMockMode() {
-  return FORCE_MOCK || !canCallSalesforce()
+  return FORCE_MOCK
 }
 
-const sfApi = axios.create({
+const api = axios.create({
+  baseURL: API_BASE,
   headers: {
     'Content-Type': 'application/json',
   },
 })
-
-sfApi.interceptors.request.use((config) => {
-  const accessToken = getSalesforceAccessToken()
-  const baseURL = getApiBaseUrl()
-
-  if (accessToken) {
-    config.headers.Authorization = `Bearer ${accessToken}`
-  }
-  if (baseURL) {
-    config.baseURL = baseURL
-  }
-
-  return config
-})
-
-sfApi.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error?.response?.status === 401) {
-      clearSalesforceSession()
-    }
-    return Promise.reject(error)
-  }
-)
 
 const fakeDelay = (ms = 400) => new Promise((r) => setTimeout(r, ms))
 
@@ -164,51 +123,30 @@ export async function getOffers() {
   }
 
   try {
-    const { data } = await sfApi.get('/services/apexrest/ram/offers')
+    const { data } = await api.get('/api/offers')
     if (!Array.isArray(data)) return []
 
-    // Si Apex renvoie deja le format UI, on le garde
     if (data.length === 0 || data[0].reference) {
       return data
         .map(normalizeOfferUi)
         .filter((offer) => {
-        // Accepte soit status deja normalise, soit valeur Salesforce brute.
-        if (offer.status === 'active') return true
-        if (isPublishedStatus(offer.status)) return true
-        return false
-      })
-      
+          if (offer.status === 'active') return true
+          if (isPublishedStatus(offer.status)) return true
+          return false
+        })
     }
 
-    // Si Apex renvoie des records Offer__c bruts, on mappe ici
     return data
       .filter((record) => isPublishedStatus(record.Status__c))
       .map(mapOfferRecordToUi)
   } catch {
-    // Fallback de demo tant que la classe Apex n'est pas deployee
     await fakeDelay()
     return mockOffers
   }
 }
 
 export async function getOffersFromSObjectApi() {
-  if (useMockMode()) {
-    await fakeDelay()
-    return mockOffers
-  }
-
-  const query = [
-    'SELECT Id, Name, Status__c, Price__c, Escale_concernee__c, Type_de_produit__c, Date_de_debut__c, Date_de_fin__c,',
-    'Message_accompagnant_l_invitation__c, Plafond__c, Limite_soumissions_24h__c, Submitted_At__c,',
-    'Engagement_minimal_d_inventaire_hotel__c, Volume_previsionnel_nuitees_mois__c, Ponderation_prix__c,',
-    'Ponderation_SLA__c, Ponderation_qualite__c',
-    'FROM Offer__c ORDER BY Date_de_fin__c DESC NULLS LAST',
-  ].join(' ')
-
-  const { data } = await sfApi.get(`/services/data/v61.0/query?q=${encodeURIComponent(query)}`)
-  return (data.records || [])
-    .filter((record) => isPublishedStatus(record.Status__c))
-    .map(mapOfferRecordToUi)
+  return getOffers()
 }
 
 export async function getConsultations() {
@@ -217,7 +155,7 @@ export async function getConsultations() {
     return consultations
   }
 
-  const { data } = await sfApi.get('/services/apexrest/bidding/consultations')
+  const { data } = await api.get('/api/consultations')
   return data
 }
 
@@ -231,7 +169,7 @@ export async function getConsultationDetail(consultationId) {
     }
   }
 
-  const { data } = await sfApi.get(`/services/apexrest/bidding/consultation/${consultationId}`)
+  const { data } = await api.get(`/api/consultations/${consultationId}`)
   return data
 }
 
@@ -241,7 +179,7 @@ export async function getMyHistory(consultationId) {
     return myHistory
   }
 
-  const { data } = await sfApi.get(`/services/apexrest/bidding/history/${consultationId}`)
+  const { data } = await api.get(`/api/history/${consultationId}`)
   return data
 }
 
@@ -260,7 +198,7 @@ export async function submitBid({ consultationId, price, note }) {
     }
   }
 
-  const { data } = await sfApi.post('/services/apexrest/bidding/submit', {
+  const { data } = await api.post('/api/submit', {
     consultationId,
     price,
     note,
@@ -275,7 +213,7 @@ export async function getCurrentHotel() {
     return currentHotel
   }
 
-  const { data } = await sfApi.get('/services/apexrest/bidding/me')
+  const { data } = await api.get('/api/me')
   return data
 }
 
@@ -295,7 +233,7 @@ export async function getSoumissionsByOffer(offerId) {
     }))
   }
 
-  const { data } = await sfApi.get('/services/apexrest/ram/soumissions', {
+  const { data } = await api.get('/api/soumissions', {
     params: { offerId },
   })
   const parsed = normalizeJsonResponse(data)
@@ -312,7 +250,7 @@ export async function getConditionsAssocieesValues() {
     ]
   }
 
-  const { data } = await sfApi.get('/services/apexrest/ram/soumissions', {
+  const { data } = await api.get('/api/soumissions', {
     params: { meta: 'conditions' },
   })
 
@@ -320,14 +258,6 @@ export async function getConditionsAssocieesValues() {
   return Array.isArray(parsed) ? parsed : []
 }
 
-/**
- * Créer une nouvelle soumission dans Salesforce
- * @param {string} appelDOffresId - ID de l'appel d'offres
- * @param {number} prixPropose - Prix proposé
- * @param {string} conditionsAssociees - Conditions associées (optionnel)
- * @param {string} noteInterne - Note interne (optionnel)
- * @returns {Promise<Object>} Réponse de la création de soumission
- */
 export async function createSoumission(appelDOffresId, prixPropose, conditionsAssociees = '', noteInterne = '') {
   if (useMockMode()) {
     await fakeDelay(800)
@@ -341,7 +271,7 @@ export async function createSoumission(appelDOffresId, prixPropose, conditionsAs
   }
 
   try {
-    const { data } = await sfApi.post('/services/apexrest/ram/soumissions', {
+    const { data } = await api.post('/api/soumissions', {
       appelDOffresId,
       prixPropose,
       conditionsAssociees,
@@ -353,3 +283,4 @@ export async function createSoumission(appelDOffresId, prixPropose, conditionsAs
     throw error
   }
 }
+
