@@ -8,7 +8,7 @@ export default function OfferDetails({ offer }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="card-premium overflow-hidden"
+      className="card-premium overflow-hidden flex flex-col w-full"
     >
       <div className="px-6 py-4 bg-gradient-dark text-white relative overflow-hidden">
         <div className="absolute inset-0 moroccan-pattern-dark opacity-30" />
@@ -23,7 +23,7 @@ export default function OfferDetails({ offer }) {
         </div>
       </div>
 
-      <div className="p-6">
+      <div className="p-6 flex-1">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
           <Field label="Escale concernee" value={offer.escale} />
           <Field label="Type de produit" value={offer.productType} />

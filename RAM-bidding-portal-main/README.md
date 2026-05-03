@@ -167,3 +167,5 @@ Pour que la connexion fonctionne, il faut côté Salesforce :
 
 4. **Activer CORS** pour le domaine du portail dans Setup → CORS.
 # RAM-bidding-portal
+
+# RAM-portal

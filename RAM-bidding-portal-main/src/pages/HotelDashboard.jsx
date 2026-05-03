@@ -125,16 +125,18 @@ export default function HotelDashboard() {
       />
 
       {showDetails ? (
-        <div className="mt-8 grid grid-cols-1 xl:grid-cols-3 gap-6">
-          <div className="xl:col-span-2">
+        <div className="mt-8 grid grid-cols-1 xl:grid-cols-3 gap-6 items-stretch">
+          <div className="xl:col-span-2 flex">
             <OfferDetails offer={activeOffer} />
           </div>
-          <StaticSubmissionPanel
-            activeOffer={activeOffer}
-            ranking={liveRanking}
-            conditionsOptions={conditionsOptions}
-            onSoumissionCreated={() => refreshSoumissionData(activeOffer?.id)}
-          />
+          <div className="flex">
+            <StaticSubmissionPanel
+              activeOffer={activeOffer}
+              ranking={liveRanking}
+              conditionsOptions={conditionsOptions}
+              onSoumissionCreated={() => refreshSoumissionData(activeOffer?.id)}
+            />
+          </div>
         </div>
       ) : null}
 
@@ -225,7 +227,7 @@ function getProjectedRank(rankingRows, proposedPrice) {
 }
 
 function StaticSubmissionPanel({ activeOffer, ranking, conditionsOptions, onSoumissionCreated }) {
-  const [proposedPrice, setProposedPrice] = useState(0)
+  const [proposedPriceInput, setProposedPriceInput] = useState('')
   const [conditions, setConditions] = useState('')
   const [internalNote, setInternalNote] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -237,14 +239,19 @@ function StaticSubmissionPanel({ activeOffer, ranking, conditionsOptions, onSoum
 
   // Initialiser le prix proposé avec une valeur par défaut
   useEffect(() => {
-    setProposedPrice(Math.max(floor, Math.min(ceiling, floor + 165)))
+    const defaultPrice = Math.max(floor, Math.min(ceiling, floor + 165))
+    setProposedPriceInput(String(defaultPrice))
   }, [activeOffer, floor, ceiling])
 
+  const proposedPrice = Number(proposedPriceInput)
+  const hasValidProposedPrice = proposedPriceInput.trim() !== '' && Number.isFinite(proposedPrice)
   const bestMarketPrice = ranking[0]?.price
   const currentRank = ranking.find((row) => row.me)?.rank || 0
-  const projectedRank = getProjectedRank(ranking, proposedPrice)
+  const projectedRank = hasValidProposedPrice ? getProjectedRank(ranking, proposedPrice) : null
   const rankMessage =
-    currentRank === 0
+    !hasValidProposedPrice
+      ? 'Position projetee : saisir un tarif valide'
+      : currentRank === 0
       ? `Position projetee : #${projectedRank}`
       : projectedRank < currentRank
         ? `Position projetee : #${projectedRank} (amelioration)`
@@ -253,11 +260,7 @@ function StaticSubmissionPanel({ activeOffer, ranking, conditionsOptions, onSoum
           : `Position projetee : #${projectedRank} (inchangée)`
 
   const handlePriceChange = (e) => {
-    const value = parseFloat(e.target.value) || 0
-    // Vérifier que le prix est dans la plage autorisée
-    if (value >= floor && value <= ceiling) {
-      setProposedPrice(value)
-    }
+    setProposedPriceInput(e.target.value)
   }
 
   const handleSubmit = async (e) => {
@@ -268,7 +271,7 @@ function StaticSubmissionPanel({ activeOffer, ranking, conditionsOptions, onSoum
 
     try {
       // Valider le prix
-      if (proposedPrice < floor || proposedPrice > ceiling) {
+      if (!hasValidProposedPrice || proposedPrice < floor || proposedPrice > ceiling) {
         throw new Error(`Tarif hors fourchette autorisée (${floor}-${ceiling} MAD)`)
       }
 
@@ -285,7 +288,8 @@ function StaticSubmissionPanel({ activeOffer, ranking, conditionsOptions, onSoum
         setSubmitMessage(`${response.message || 'Soumission créée avec succès.'}${versionLabel}`)
         await onSoumissionCreated?.()
         // Réinitialiser le formulaire
-        setProposedPrice(Math.max(floor, Math.min(ceiling, floor + 165)))
+        const defaultPrice = Math.max(floor, Math.min(ceiling, floor + 165))
+        setProposedPriceInput(String(defaultPrice))
         setConditions('')
         setInternalNote('')
       } else {
@@ -300,7 +304,7 @@ function StaticSubmissionPanel({ activeOffer, ranking, conditionsOptions, onSoum
   }
 
   return (
-    <div className="card-premium overflow-hidden">
+    <div className="card-premium overflow-hidden flex flex-col w-full">
       <div className="px-6 py-4 bg-gradient-dark text-white relative overflow-hidden">
         <div className="absolute inset-0 moroccan-pattern-dark opacity-30" />
         <div className="relative">
@@ -314,88 +318,92 @@ function StaticSubmissionPanel({ activeOffer, ranking, conditionsOptions, onSoum
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-6 space-y-4">
-        {/* Affichage des messages */}
-        {submitMessage && (
-          <div className="p-3.5 rounded-lg border border-green-200 bg-green-50">
-            <div className="font-semibold text-green-900 text-sm">{submitMessage}</div>
-          </div>
-        )}
+      <form onSubmit={handleSubmit} className="p-6 flex-1 flex flex-col gap-4">
+        <div className="flex flex-col gap-4 flex-1">
+          {/* Affichage des messages */}
+          {submitMessage && (
+            <div className="p-3.5 rounded-lg border border-green-200 bg-green-50">
+              <div className="font-semibold text-green-900 text-sm">{submitMessage}</div>
+            </div>
+          )}
 
-        {submitError && (
-          <div className="p-3.5 rounded-lg border border-red-200 bg-red-50">
-            <div className="font-semibold text-red-900 text-sm">{submitError}</div>
-          </div>
-        )}
+          {submitError && (
+            <div className="p-3.5 rounded-lg border border-red-200 bg-red-50">
+              <div className="font-semibold text-red-900 text-sm">{submitError}</div>
+            </div>
+          )}
 
-        {/* Tarif proposé */}
-        <div>
-          <div className="text-[10px] uppercase tracking-wider text-ink-muted font-semibold mb-1.5">
-            Tarif propose
+          {/* Tarif proposé */}
+          <div>
+            <div className="text-[10px] uppercase tracking-wider text-ink-muted font-semibold mb-1.5">
+              Tarif propose
+            </div>
+            <input
+              type="number"
+              min={floor}
+              max={ceiling}
+              value={proposedPriceInput}
+              onChange={handlePriceChange}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg font-display font-bold text-lg text-ram-secondary"
+            />
+            <p className="text-[11px] text-ink-muted mt-1.5 leading-relaxed">
+              Plage autorisee : {floor} - {ceiling} MAD · Best marche actuel :{' '}
+              <strong>{bestMarketPrice || '-'}</strong> MAD
+            </p>
           </div>
-          <input
-            type="number"
-            min={floor}
-            max={ceiling}
-            value={proposedPrice}
-            onChange={handlePriceChange}
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg font-display font-bold text-lg text-ram-secondary"
-          />
-          <p className="text-[11px] text-ink-muted mt-1.5 leading-relaxed">
-            Plage autorisee : {floor} - {ceiling} MAD · Best marche actuel :{' '}
-            <strong>{bestMarketPrice || '-'}</strong> MAD
-          </p>
+
+          {/* Position projetée */}
+          <div className="p-3.5 rounded-lg border border-blue-200 bg-blue-50">
+            <div className="font-semibold text-blue-900 text-sm">{rankMessage}</div>
+            <div className="text-[13px] text-blue-800 mt-1">Classement recalcule automatiquement apres soumission.</div>
+          </div>
+
+          {/* Conditions associées */}
+          <div>
+            <div className="text-[10px] uppercase tracking-wider text-ink-muted font-semibold mb-1.5">
+              Conditions associees
+            </div>
+            <select
+              value={conditions}
+              onChange={(e) => setConditions(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg text-ink-subtle text-sm"
+            >
+              <option value="">Sélectionner une condition...</option>
+              {conditionsOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Note interne */}
+          <div>
+            <div className="text-[10px] uppercase tracking-wider text-ink-muted font-semibold mb-1.5">
+              Note interne (optionnel)
+            </div>
+            <textarea
+              value={internalNote}
+              onChange={(e) => setInternalNote(e.target.value)}
+              placeholder="Justification ou contexte de cette soumission..."
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg text-ink-subtle text-sm leading-relaxed h-20 resize-none"
+            />
+          </div>
         </div>
 
-        {/* Position projetée */}
-        <div className="p-3.5 rounded-lg border border-blue-200 bg-blue-50">
-          <div className="font-semibold text-blue-900 text-sm">{rankMessage}</div>
-          <div className="text-[13px] text-blue-800 mt-1">Classement recalcule automatiquement apres soumission.</div>
-        </div>
-
-        {/* Conditions associées */}
-        <div>
-          <div className="text-[10px] uppercase tracking-wider text-ink-muted font-semibold mb-1.5">
-            Conditions associees
-          </div>
-          <select
-            value={conditions}
-            onChange={(e) => setConditions(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg text-ink-subtle text-sm"
+        {/* Bouton + footer — collé en bas */}
+        <div className="flex flex-col gap-4 mt-auto">
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full btn-premium-primary justify-center text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <option value="">Sélectionner une condition...</option>
-            {conditionsOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
+            {isSubmitting ? 'Soumission en cours...' : 'Soumettre le tarif'}
+          </button>
 
-        {/* Note interne */}
-        <div>
-          <div className="text-[10px] uppercase tracking-wider text-ink-muted font-semibold mb-1.5">
-            Note interne (optionnel)
+          <div className="pt-3 border-t border-gray-100 text-[11px] text-ink-muted leading-relaxed">
+            Soumission <strong>horodatee et notifiee</strong> a la Direction Achats RAM.
           </div>
-          <textarea
-            value={internalNote}
-            onChange={(e) => setInternalNote(e.target.value)}
-            placeholder="Justification ou contexte de cette soumission..."
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg text-ink-subtle text-sm leading-relaxed h-20 resize-none"
-          />
-        </div>
-
-        {/* Bouton de soumission */}
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full btn-premium-primary justify-center text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isSubmitting ? 'Soumission en cours...' : 'Soumettre le tarif'}
-        </button>
-
-        <div className="pt-3 border-t border-gray-100 text-[11px] text-ink-muted leading-relaxed">
-          Soumission <strong>horodatee et notifiee</strong> a la Direction Achats RAM.
         </div>
       </form>
     </div>
